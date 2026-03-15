@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:offlined_ictionary/constants/app_colors.dart';
 import 'package:offlined_ictionary/onboarding/onboard_page.dart';
+import 'package:offlined_ictionary/wordslist/wordslistview.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -86,6 +87,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       _controller.nextPage(
                         duration: const Duration(milliseconds: 300),
                         curve: Curves.ease,
+                      );
+                    } else if (currentPage == 2) {
+                      // Navigate to the words list screen
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const Wordslistview(),
+                        ),
                       );
                     }
                   },
