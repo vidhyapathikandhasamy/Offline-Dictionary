@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:offlined_ictionary/constants/app_colors.dart';
 import 'package:offlined_ictionary/onboarding/onboard_page.dart';
 import 'package:offlined_ictionary/wordslist/wordslistview.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+const _kSeenOnboardingKey = 'seenOnboarding';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -89,8 +92,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         curve: Curves.ease,
                       );
                     } else if (currentPage == 2) {
-                      // Navigate to the words list screen
-                      Navigator.of(context).push(
+                      // Mark onboarding as completed and navigate to the words list.
+                      SharedPreferences.getInstance().then((prefs) {
+                        prefs.setBool(_kSeenOnboardingKey, true);
+                      });
+
+                      Navigator.of(context).pushReplacement(
                         MaterialPageRoute(
                           builder: (_) => const Wordslistview(),
                         ),

@@ -107,7 +107,8 @@ class _WordslistviewState extends State<Wordslistview> {
                   : ListView.separated(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       itemCount: _filteredWords.length,
-                      separatorBuilder: (_, __) => const Divider(height: 1),
+                      separatorBuilder: (context, index) =>
+                          const Divider(height: 1),
                       itemBuilder: (context, index) {
                         final word = _filteredWords[index];
                         return ListTile(
