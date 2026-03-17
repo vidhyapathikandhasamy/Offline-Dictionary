@@ -34,7 +34,8 @@ class Wordslistview extends StatefulWidget {
   State<Wordslistview> createState() => _WordslistviewState();
 }
 
-class _WordslistviewState extends State<Wordslistview> {
+class _WordslistviewState extends State<Wordslistview>
+    with TickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
 
   List<WordEntry> _allWords = [];
@@ -42,11 +43,28 @@ class _WordslistviewState extends State<Wordslistview> {
 
   bool _isLoading = true;
   String? _loadError;
+  bool _isSearching = false;
+
+  late AnimationController _searchAnimationController;
+  late Animation<double> _searchAnimation;
 
   @override
   void initState() {
     super.initState();
     _searchController.addListener(_onSearchChanged);
+
+    _searchAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+
+    _searchAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _searchAnimationController,
+        curve: Curves.easeInOut,
+      ),
+    );
+
     _loadWords();
   }
 
@@ -54,6 +72,7 @@ class _WordslistviewState extends State<Wordslistview> {
   void dispose() {
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
+    _searchAnimationController.dispose();
     super.dispose();
   }
 
@@ -73,6 +92,12 @@ class _WordslistviewState extends State<Wordslistview> {
         _filteredWords = List.from(_allWords);
         _isLoading = false;
       });
+
+      // Trigger animation for initial load
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _searchAnimationController.reset();
+        _searchAnimationController.forward();
+      });
     } catch (e, st) {
       // Log the full error and stack trace to help diagnose asset loading issues.
       debugPrint('Failed to load word list: $e');
@@ -86,14 +111,27 @@ class _WordslistviewState extends State<Wordslistview> {
 
   void _onSearchChanged() {
     final query = _searchController.text.trim().toLowerCase();
+
     setState(() {
-      if (query.isEmpty) {
-        _filteredWords = List.from(_allWords);
-      } else {
-        _filteredWords = _allWords
-            .where((word) => word.word.toLowerCase().contains(query))
-            .toList();
-      }
+      _isSearching = true;
+    });
+
+    // Add a small delay to show the searching animation
+    Future.delayed(const Duration(milliseconds: 150), () {
+      setState(() {
+        if (query.isEmpty) {
+          _filteredWords = List.from(_allWords);
+        } else {
+          _filteredWords = _allWords
+              .where((word) => word.word.toLowerCase().contains(query))
+              .toList();
+        }
+        _isSearching = false;
+      });
+
+      // Trigger animation
+      _searchAnimationController.reset();
+      _searchAnimationController.forward();
     });
   }
 
@@ -170,125 +208,215 @@ class _WordslistviewState extends State<Wordslistview> {
                     ),
                   ),
                   Expanded(
-                    child: _filteredWords.isEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.search_off,
-                                  size: 64,
-                                  color: AppColors.appGreen.withValues(
-                                    alpha: 0.3,
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'No words found.',
-                                  style: TextStyle(
-                                    fontSize: 18,
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      switchInCurve: Curves.easeInOut,
+                      switchOutCurve: Curves.easeInOut,
+                      child: _filteredWords.isEmpty
+                          ? Center(
+                              key: const ValueKey('empty'),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.search_off,
+                                    size: 64,
                                     color: AppColors.appGreen.withValues(
-                                      alpha: 0.7,
-                                    ),
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Try adjusting your search terms',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: AppColors.appGreen.withValues(
-                                      alpha: 0.5,
+                                      alpha: 0.3,
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          )
-                        : ListView.builder(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                            itemCount: _filteredWords.length,
-                            itemBuilder: (context, index) {
-                              final word = _filteredWords[index];
-                              return Container(
-                                margin: const EdgeInsets.only(bottom: 8),
-                                child: Card(
-                                  elevation: 2,
-                                  shadowColor: AppColors.appGreen.withValues(
-                                    alpha: 0.1,
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'No words found.',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      color: AppColors.appGreen.withValues(
+                                        alpha: 0.7,
+                                      ),
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: InkWell(
-                                    borderRadius: BorderRadius.circular(12),
-                                    onTap: () {
-                                      // TODO: Navigate to word detail screen.
-                                    },
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(16),
-                                      child: Row(
-                                        children: [
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  word.word,
-                                                  style: const TextStyle(
-                                                    fontSize: 18,
-                                                    fontWeight: FontWeight.w600,
-                                                    letterSpacing: 0.5,
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 4),
-                                                Container(
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                        horizontal: 8,
-                                                        vertical: 2,
-                                                      ),
-                                                  decoration: BoxDecoration(
-                                                    color: AppColors.appGreen
-                                                        .withValues(alpha: 0.1),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          8,
-                                                        ),
-                                                  ),
-                                                  child: Text(
-                                                    word.pos.toUpperCase(),
-                                                    style: TextStyle(
-                                                      fontSize: 12,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      color: AppColors.appGreen,
-                                                      letterSpacing: 0.8,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          Icon(
-                                            Icons.arrow_forward_ios,
-                                            size: 16,
-                                            color: AppColors.appGreen
-                                                .withValues(alpha: 0.5),
-                                          ),
-                                        ],
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Try adjusting your search terms',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: AppColors.appGreen.withValues(
+                                        alpha: 0.5,
                                       ),
                                     ),
                                   ),
-                                ),
-                              );
-                            },
-                          ),
+                                ],
+                              ),
+                            )
+                          : _isSearching
+                          ? Container(
+                              key: const ValueKey('searching'),
+                              padding: const EdgeInsets.symmetric(vertical: 32),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    width: 40,
+                                    height: 40,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 3,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        AppColors.appGreen,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'Searching...',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: AppColors.appGreen.withValues(
+                                        alpha: 0.7,
+                                      ),
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : ListView.builder(
+                              key: ValueKey('results_${_filteredWords.length}'),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                              itemCount: _filteredWords.length,
+                              itemBuilder: (context, index) {
+                                final word = _filteredWords[index];
+                                return AnimatedBuilder(
+                                  animation: _searchAnimation,
+                                  builder: (context, child) {
+                                    return FadeTransition(
+                                      opacity: _searchAnimation,
+                                      child: SlideTransition(
+                                        position:
+                                            Tween<Offset>(
+                                              begin: const Offset(0, 0.1),
+                                              end: Offset.zero,
+                                            ).animate(
+                                              CurvedAnimation(
+                                                parent:
+                                                    _searchAnimationController,
+                                                curve: Interval(
+                                                  (index * 0.05).clamp(
+                                                    0.0,
+                                                    1.0,
+                                                  ),
+                                                  ((index * 0.05) + 0.3).clamp(
+                                                    0.0,
+                                                    1.0,
+                                                  ),
+                                                  curve: Curves.easeOut,
+                                                ),
+                                              ),
+                                            ),
+                                        child: Container(
+                                          margin: const EdgeInsets.only(
+                                            bottom: 8,
+                                          ),
+                                          child: Card(
+                                            elevation: 2,
+                                            shadowColor: AppColors.appGreen
+                                                .withValues(alpha: 0.1),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: InkWell(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              onTap: () {
+                                                // TODO: Navigate to word detail screen.
+                                              },
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(
+                                                  16,
+                                                ),
+                                                child: Row(
+                                                  children: [
+                                                    Expanded(
+                                                      child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Text(
+                                                            word.word,
+                                                            style:
+                                                                const TextStyle(
+                                                                  fontSize: 18,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w600,
+                                                                  letterSpacing:
+                                                                      0.5,
+                                                                ),
+                                                          ),
+                                                          const SizedBox(
+                                                            height: 4,
+                                                          ),
+                                                          Container(
+                                                            padding:
+                                                                const EdgeInsets.symmetric(
+                                                                  horizontal: 8,
+                                                                  vertical: 2,
+                                                                ),
+                                                            decoration: BoxDecoration(
+                                                              color: AppColors
+                                                                  .appGreen
+                                                                  .withValues(
+                                                                    alpha: 0.1,
+                                                                  ),
+                                                              borderRadius:
+                                                                  BorderRadius.circular(
+                                                                    8,
+                                                                  ),
+                                                            ),
+                                                            child: Text(
+                                                              word.pos
+                                                                  .toUpperCase(),
+                                                              style: TextStyle(
+                                                                fontSize: 12,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w500,
+                                                                color: AppColors
+                                                                    .appGreen,
+                                                                letterSpacing:
+                                                                    0.8,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    Icon(
+                                                      Icons.arrow_forward_ios,
+                                                      size: 16,
+                                                      color: AppColors.appGreen
+                                                          .withValues(
+                                                            alpha: 0.5,
+                                                          ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                    ),
                   ),
                 ],
               ),
