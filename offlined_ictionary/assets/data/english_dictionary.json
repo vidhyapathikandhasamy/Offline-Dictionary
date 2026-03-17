@@ -256,7 +256,7 @@
     { "word": "bliss", "pos": "noun", "meaning": "Perfect happiness; great joy.", "example": "It was sheer bliss to relax on the beach." },
     { "word": "boisterous", "pos": "adjective", "meaning": "Noisy, energetic, and cheerful.", "example": "The children were boisterous at the playground." },
     { "word": "bold", "pos": "adjective", "meaning": "Showing a willingness to take risks; confident.", "example": "She made a bold decision to start her own company." },
-    { "word": "boost", "pos": "verb", "meaning", "meaning": "To improve or increase something.", "example": "A good night's sleep can boost your energy." },
+    { "word": "boost", "pos": "verb",  "meaning": "To improve or increase something.", "example": "A good night's sleep can boost your energy." },
     { "word": "burden", "pos": "noun", "meaning": "A load, especially a heavy one; a duty or responsibility.", "example": "Financial debt can be a heavy burden." },
     { "word": "calamity", "pos": "noun", "meaning": "An event causing great and often sudden damage or distress.", "example": "The earthquake was a calamity for the region." },
     { "word": "calm", "pos": "adjective", "meaning": "Not showing or feeling nervousness or excitement.", "example": "He remained calm during the emergency." },
