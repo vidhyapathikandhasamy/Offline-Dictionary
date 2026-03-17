@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:offlined_ictionary/constants/app_colors.dart';
+import 'package:offlined_ictionary/wordsdetails/wordsdetailsview.dart';
 
 class WordEntry {
   final String word;
@@ -332,7 +333,14 @@ class _WordslistviewState extends State<Wordslistview>
                                               borderRadius:
                                                   BorderRadius.circular(12),
                                               onTap: () {
-                                                // TODO: Navigate to word detail screen.
+                                                Navigator.of(context).push(
+                                                  MaterialPageRoute(
+                                                    builder: (_) =>
+                                                        Wordsdetailsview(
+                                                          wordEntry: word,
+                                                        ),
+                                                  ),
+                                                );
                                               },
                                               child: Padding(
                                                 padding: const EdgeInsets.all(
