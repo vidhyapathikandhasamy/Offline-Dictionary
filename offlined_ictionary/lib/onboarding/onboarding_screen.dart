@@ -98,8 +98,47 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       });
 
                       Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(
-                          builder: (_) => const Wordslistview(),
+                        PageRouteBuilder(
+                          pageBuilder:
+                              (context, animation, secondaryAnimation) =>
+                                  const Wordslistview(),
+                          transitionsBuilder:
+                              (context, animation, secondaryAnimation, child) {
+                                const begin = Offset(1.0, 0.0);
+                                const end = Offset.zero;
+                                const curve = Curves.easeInOutCubic;
+
+                                final tween = Tween(begin: begin, end: end);
+                                final curvedAnimation = CurvedAnimation(
+                                  parent: animation,
+                                  curve: curve,
+                                );
+
+                                return Stack(
+                                  children: [
+                                    SlideTransition(
+                                      position: tween.animate(curvedAnimation),
+                                      child: FadeTransition(
+                                        opacity: animation,
+                                        child: ScaleTransition(
+                                          scale: Tween<double>(
+                                            begin: 0.85,
+                                            end: 1.0,
+                                          ).animate(curvedAnimation),
+                                          child: RotationTransition(
+                                            turns: Tween<double>(
+                                              begin: 0.1,
+                                              end: 0.0,
+                                            ).animate(curvedAnimation),
+                                            child: child,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                          transitionDuration: const Duration(milliseconds: 800),
                         ),
                       );
                     }
