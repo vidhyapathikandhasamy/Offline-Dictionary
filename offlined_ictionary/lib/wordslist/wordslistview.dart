@@ -334,10 +334,54 @@ class _WordslistviewState extends State<Wordslistview>
                                                   BorderRadius.circular(12),
                                               onTap: () {
                                                 Navigator.of(context).push(
-                                                  MaterialPageRoute(
-                                                    builder: (_) =>
-                                                        Wordsdetailsview(
+                                                  PageRouteBuilder(
+                                                    pageBuilder:
+                                                        (
+                                                          context,
+                                                          animation,
+                                                          secondaryAnimation,
+                                                        ) => Wordsdetailsview(
                                                           wordEntry: word,
+                                                        ),
+                                                    transitionsBuilder:
+                                                        (
+                                                          context,
+                                                          animation,
+                                                          secondaryAnimation,
+                                                          child,
+                                                        ) {
+                                                          const begin = Offset(
+                                                            1.0,
+                                                            0.0,
+                                                          );
+                                                          const end =
+                                                              Offset.zero;
+                                                          const curve = Curves
+                                                              .easeInOutCubic;
+
+                                                          var tween =
+                                                              Tween(
+                                                                begin: begin,
+                                                                end: end,
+                                                              ).chain(
+                                                                CurveTween(
+                                                                  curve: curve,
+                                                                ),
+                                                              );
+                                                          var offsetAnimation =
+                                                              animation.drive(
+                                                                tween,
+                                                              );
+
+                                                          return SlideTransition(
+                                                            position:
+                                                                offsetAnimation,
+                                                            child: child,
+                                                          );
+                                                        },
+                                                    transitionDuration:
+                                                        const Duration(
+                                                          milliseconds: 400,
                                                         ),
                                                   ),
                                                 );
