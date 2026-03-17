@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 const _kSeenOnboardingKey = 'seenOnboarding';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 
