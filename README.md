@@ -21,7 +21,6 @@ Database: SQLite / Local JSON for fast data retrieval.
 Architecture: Clean architecture for scalability and maintainability.
 
 📂 Project Structure
-Plaintext
 Offline-Dictionary/
 ├── assets/              # Word datasets (JSON/DB) & images
 ├── lib/
