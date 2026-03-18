@@ -92,11 +92,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         curve: Curves.ease,
                       );
                     } else if (currentPage == 2) {
-                      // Mark onboarding as completed and navigate to the words list.
                       SharedPreferences.getInstance().then((prefs) {
                         prefs.setBool(_kSeenOnboardingKey, true);
                       });
-
                       Navigator.of(context).pushReplacement(
                         PageRouteBuilder(
                           pageBuilder:
@@ -107,13 +105,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 const begin = Offset(1.0, 0.0);
                                 const end = Offset.zero;
                                 const curve = Curves.easeInOutCubic;
-
                                 final tween = Tween(begin: begin, end: end);
                                 final curvedAnimation = CurvedAnimation(
                                   parent: animation,
                                   curve: curve,
                                 );
-
                                 return Stack(
                                   children: [
                                     SlideTransition(
