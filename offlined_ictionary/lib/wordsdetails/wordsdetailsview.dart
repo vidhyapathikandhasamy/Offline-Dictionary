@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:offlined_ictionary/constants/app_colors.dart';
 import 'package:offlined_ictionary/dictionary/database_helper.dart';
 
@@ -12,6 +13,32 @@ class Wordsdetailsview extends StatefulWidget {
 }
 
 class _WordsdetailsviewState extends State<Wordsdetailsview> {
+  late FlutterTts flutterTts;
+
+  @override
+  void initState() {
+    super.initState();
+    flutterTts = FlutterTts();
+    _initTts();
+  }
+
+  @override
+  void dispose() {
+    flutterTts.stop();
+    super.dispose();
+  }
+
+  Future<void> _initTts() async {
+    await flutterTts.setLanguage("en-US");
+    await flutterTts.setSpeechRate(0.5);
+    await flutterTts.setVolume(1.0);
+    await flutterTts.setPitch(1.0);
+  }
+
+  Future<void> _speak(String text) async {
+    await flutterTts.speak(text);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -48,24 +75,59 @@ class _WordsdetailsviewState extends State<Wordsdetailsview> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.appGreen,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        widget.wordEntry.pos.toUpperCase(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 1,
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.appGreen,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            widget.wordEntry.pos.toUpperCase(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 1,
+                            ),
+                          ),
                         ),
-                      ),
+                        Expanded(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: AppColors.appPink.withOpacity(0.15),
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppColors.appPink.withOpacity(0.2),
+                                      blurRadius: 8,
+                                      offset: Offset(2, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: IconButton(
+                                  onPressed: () =>
+                                      _speak(widget.wordEntry.word),
+                                  icon: Icon(
+                                    Icons.volume_up,
+                                    color: AppColors.appPink,
+                                    size: 28,
+                                  ),
+                                  tooltip: 'Listen to pronunciation',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
