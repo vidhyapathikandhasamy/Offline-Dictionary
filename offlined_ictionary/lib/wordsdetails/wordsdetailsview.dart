@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:offlined_ictionary/constants/app_colors.dart';
-import 'package:offlined_ictionary/wordslist/wordslistview.dart';
+import 'package:offlined_ictionary/dictionary/database_helper.dart';
 
 class Wordsdetailsview extends StatefulWidget {
   final WordEntry wordEntry;

@@ -1,32 +1,7 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:offlined_ictionary/constants/app_colors.dart';
+import 'package:offlined_ictionary/dictionary/database_helper.dart';
 import 'package:offlined_ictionary/wordsdetails/wordsdetailsview.dart';
-
-class WordEntry {
-  final String word;
-  final String pos;
-  final String meaning;
-  final String example;
-
-  WordEntry({
-    required this.word,
-    required this.pos,
-    required this.meaning,
-    required this.example,
-  });
-
-  factory WordEntry.fromJson(Map<String, dynamic> json) {
-    return WordEntry(
-      word: json['word'] as String? ?? '',
-      pos: json['pos'] as String? ?? '',
-      meaning: json['meaning'] as String? ?? '',
-      example: json['example'] as String? ?? '',
-    );
-  }
-}
 
 class Wordslistview extends StatefulWidget {
   const Wordslistview({super.key});
@@ -79,15 +54,8 @@ class _WordslistviewState extends State<Wordslistview>
 
   Future<void> _loadWords() async {
     try {
-      final jsonString = await rootBundle.loadString(
-        'assets/data/english_dictionary.json',
-      );
-      final Map<String, dynamic> jsonMap = jsonDecode(jsonString);
-      final List<dynamic> wordsJson = jsonMap['words'] as List<dynamic>? ?? [];
-
-      _allWords = wordsJson
-          .map((item) => WordEntry.fromJson(item as Map<String, dynamic>))
-          .toList();
+      final databaseHelper = DatabaseHelper();
+      _allWords = await databaseHelper.getAllWords();
 
       setState(() {
         _filteredWords = List.from(_allWords);
@@ -100,7 +68,7 @@ class _WordslistviewState extends State<Wordslistview>
         _searchAnimationController.forward();
       });
     } catch (e, st) {
-      // Log the full error and stack trace to help diagnose asset loading issues.
+      // Log the full error and stack trace to help diagnose database loading issues.
       debugPrint('Failed to load word list: $e');
       debugPrintStack(stackTrace: st);
       setState(() {
@@ -118,21 +86,31 @@ class _WordslistviewState extends State<Wordslistview>
     });
 
     // Add a small delay to show the searching animation
-    Future.delayed(const Duration(milliseconds: 150), () {
-      setState(() {
-        if (query.isEmpty) {
-          _filteredWords = List.from(_allWords);
-        } else {
-          _filteredWords = _allWords
-              .where((word) => word.word.toLowerCase().contains(query))
-              .toList();
-        }
-        _isSearching = false;
-      });
+    Future.delayed(const Duration(milliseconds: 150), () async {
+      try {
+        final databaseHelper = DatabaseHelper();
 
-      // Trigger animation
-      _searchAnimationController.reset();
-      _searchAnimationController.forward();
+        List<WordEntry> results;
+        if (query.isEmpty) {
+          results = List.from(_allWords);
+        } else {
+          results = await databaseHelper.searchWords(query);
+        }
+
+        setState(() {
+          _filteredWords = results;
+          _isSearching = false;
+        });
+
+        // Trigger animation
+        _searchAnimationController.reset();
+        _searchAnimationController.forward();
+      } catch (e) {
+        debugPrint('Search error: $e');
+        setState(() {
+          _isSearching = false;
+        });
+      }
     });
   }
 
